@@ -193,6 +193,9 @@ export const convertMarkdownToHtmlAndJson = (
   }
 
   // Étape 4: Post-traitement
+  // Remplacer les <p> contenant des <img> par des <div>
+  html = html.replace(/<p>(\s*<img[^>]*>\s*)<\/p>/gi, '<div>$1</div>');
+  
   // Ajouter target="_blank" aux liens
   html = html.replace(
     /<a\s+(?![^>]*target=)([^>]*)>/gi,

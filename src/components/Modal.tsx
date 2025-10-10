@@ -7,7 +7,7 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  bgColor = "bg-violet-600",
+  bgColor = "bg-orange-600",
 }) => {
   // Fermer avec Escape
   useEffect(() => {

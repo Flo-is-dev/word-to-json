@@ -30,8 +30,8 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
       onClick={handleClick}
       className={`bg-white border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors w-56 ${
         isDragOver
-          ? "border-violet-400 bg-violet-50"
-          : "border-slate-300 hover:border-violet-400"
+          ? "border-orange-400 bg-orange-50"
+          : "border-slate-300 hover:border-orange-400"
       }`}
     >
       <Upload className="mx-auto h-8 w-8 text-slate-400 mb-2" />

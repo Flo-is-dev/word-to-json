@@ -1,36 +1,43 @@
 import React from "react";
+import type { Language } from "@utils/i18n";
 
-const MarkdownHelp: React.FC = () => {
+interface MarkdownHelpProps {
+  language?: Language;
+}
+
+const MarkdownHelp: React.FC<MarkdownHelpProps> = ({ language = "fr" }) => {
+  const isFr = language === "fr";
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <h3 className="font-semibold text-lg mb-3 text-slate-800">
-          Formatage de base
+          {isFr ? "Formatage de base" : "Basic Formatting"}
         </h3>
         <div className="space-y-2 text-sm">
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               **gras**
             </code>
             {" → "}
             <strong>gras</strong>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               *italique*
             </code>
             {" → "}
             <em>italique</em>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               ~~barré~~
             </code>
             {" → "}
             <del>barré</del>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               `code`
             </code>
             {" → "}
@@ -43,22 +50,22 @@ const MarkdownHelp: React.FC = () => {
         <h3 className="font-semibold text-lg mb-3 text-slate-800">Titres</h3>
         <div className="space-y-2 text-sm">
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               # Titre 1
             </code>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               ## Titre 2
             </code>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               ### Titre 3
             </code>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               #### Titre 4
             </code>
           </p>
@@ -89,12 +96,12 @@ const MarkdownHelp: React.FC = () => {
         </h3>
         <div className="space-y-2 text-sm">
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               [texte du lien](https://url.com)
             </code>
           </p>
           <p>
-            <code className="bg-slate-100 px-2 py-1 rounded text-violet-600">
+            <code className="bg-slate-100 px-2 py-1 rounded text-orange-600">
               ![alt text](image.jpg)
             </code>
           </p>

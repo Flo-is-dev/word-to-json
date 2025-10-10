@@ -4,7 +4,7 @@ import type { SideTabProps } from "src/types/index";
 const SideTab: React.FC<SideTabProps> = ({
   label,
   onClick,
-  bgColor = "bg-violet-500 hover:bg-violet-600",
+  bgColor = "bg-orange-500 hover:bg-orange-600",
   position,
 }) => {
   const topPosition = `${30 + position * 15}%`;
