@@ -210,7 +210,7 @@ export const convertMarkdownToHtmlAndJson = (
 
   // Minification
   const minifiedHtml = jsonHtml
-    .replace(/\n/g, "")
+    .replace(/\n/g, " ")
     .replace(/>\s+</g, "><")
     .replace(/\s+/g, " ")
     .trim();

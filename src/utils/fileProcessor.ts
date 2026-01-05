@@ -20,12 +20,11 @@ export const processWordFile = async (file: File): Promise<string> => {
                     "p[style-name='Heading 1'] => h1",
                     "p[style-name='Heading 2'] => h2",
                     "p[style-name='Heading 3'] => h3",
+                    "p[style-name='Heading 4'] => h4",
                 ],
                 convertImage: mammoth.images.imgElement(function (image) {
                     // Convertir l'image en base64 pour l'inclure directement
                     return image.read("base64").then(function (imageBuffer) {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        // const extension = image.contentType.split("/")[1] || "png";
                         return {
                             src: `data:${image.contentType};base64,${imageBuffer}`,
                             alt: `image`,
@@ -36,187 +35,216 @@ export const processWordFile = async (file: File): Promise<string> => {
         );
 
         // Parser le HTML pour convertir en Markdown
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = htmlResult.value;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlResult.value, "text/html");
 
         let markdown = "";
         let hasTitle = false;
-        let imageCounter = 1;
 
-        // Parcourir tous les éléments
-        tempDiv.childNodes.forEach((node) => {
+        // Fonction récursive pour traiter les nœuds et préserver le formatage
+        const processNode = (node: Node): string => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return node.textContent || "";
+            }
+
             if (node.nodeType === Node.ELEMENT_NODE) {
                 const element = node as Element;
                 const tagName = element.tagName.toLowerCase();
-                const text = element.textContent?.trim() || "";
+                let content = "";
+                
+                element.childNodes.forEach((child) => {
+                    content += processNode(child);
+                });
+
+                switch (tagName) {
+                    case "strong":
+                    case "b":
+                        if (!content.trim()) return content;
+                        return `**${content}**`;
+                    case "em":
+                    case "i":
+                        if (!content.trim()) return content;
+                        return `*${content}*`;
+                    case "s":
+                    case "del":
+                    case "strike":
+                        if (!content.trim()) return content;
+                        return `~~${content}~~`;
+                    case "a":
+                        const href = element.getAttribute("href");
+                        // Si le lien a un href, on formate, sinon juste le texte
+                        return href ? `[${content}](${href})` : content;
+                    case "img":
+                        const src = element.getAttribute("src") || "";
+                        const alt = element.getAttribute("alt") || "image";
+                        return `![${alt}](${src})`;
+                    case "br":
+                        return "\n";
+                    case "sub":
+                        return `<sub>${content}</sub>`;
+                    case "sup":
+                        return `<sup>${content}</sup>`;
+                    case "span":
+                        return content;
+                    case "p":
+                        return content + " "; // Espace pour séparer les paragraphes inline
+                    default:
+                        return content;
+                }
+            }
+            return "";
+        };
+
+        // Gestion récursive des listes pour supporter l'imbrication
+        const processList = (list: Element, level: number = 0): string => {
+            const tagName = list.tagName.toLowerCase();
+            const isOrdered = tagName === 'ol';
+            let listMarkdown = "";
+            
+            const items = Array.from(list.children).filter(child => child.tagName.toLowerCase() === 'li');
+            
+            items.forEach((li, index) => {
+                const prefix = isOrdered ? `${index + 1}. ` : "- ";
+                const indent = "    ".repeat(level);
+                
+                let liContent = "";
+                let nestedListsContent = "";
+                
+                li.childNodes.forEach(child => {
+                    if (child.nodeType === Node.ELEMENT_NODE) {
+                        const childEl = child as Element;
+                        const childTag = childEl.tagName.toLowerCase();
+                        if (childTag === 'ul' || childTag === 'ol') {
+                            nestedListsContent += processList(childEl, level + 1);
+                            return;
+                        }
+                    }
+                    liContent += processNode(child);
+                });
+                
+                liContent = liContent.trim();
+                
+                listMarkdown += `${indent}${prefix}${liContent}\n`;
+                if (nestedListsContent) {
+                    listMarkdown += nestedListsContent;
+                }
+            });
+            
+            return listMarkdown;
+        };
+
+        // Gestion des tableaux simples
+        const processTable = (table: Element): string => {
+            let tableMarkdown = "";
+            const rows = Array.from(table.querySelectorAll('tr'));
+            
+            if (rows.length === 0) return "";
+            
+            const processRow = (row: Element, isHeader: boolean = false) => {
+                const cells = Array.from(row.querySelectorAll(isHeader ? 'th' : 'td, th'));
+                const cellContents = cells.map(cell => {
+                    let content = "";
+                    cell.childNodes.forEach(child => content += processNode(child));
+                    // Échapper les pipes | et remplacer les retours à la ligne par <br>
+                    return content.trim().replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+                });
+                return `| ${cellContents.join(' | ')} |`;
+            };
+
+            const headerRow = table.querySelector('thead tr') || rows[0];
+            const headerMarkdown = processRow(headerRow, true);
+            
+            tableMarkdown += headerMarkdown + "\n";
+            
+            const colCount = (headerMarkdown.match(/\|/g) || []).length - 1;
+            tableMarkdown += `| ${Array(colCount).fill('---').join(' | ')} |\n`;
+            
+            const bodyRows = table.querySelector('tbody') 
+                ? Array.from(table.querySelectorAll('tbody tr')) 
+                : rows.slice(table.querySelector('thead') ? 0 : 1);
+
+            bodyRows.forEach(row => {
+                tableMarkdown += processRow(row) + "\n";
+            });
+            
+            return tableMarkdown + "\n";
+        };
+
+        // Parcourir tous les éléments blocs du body
+        doc.body.childNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as Element;
+                const tagName = element.tagName.toLowerCase();
+                
+                const getProcessedContent = () => {
+                    let c = "";
+                    element.childNodes.forEach(child => c += processNode(child));
+                    return c;
+                };
 
                 switch (tagName) {
                     case "h1":
-                        // Si c'est le premier h1 et qu'on n'a pas encore de titre
+                        const h1Content = getProcessedContent().trim();
                         if (!hasTitle) {
-                            markdown += `# ${text}\n\n`;
+                            markdown += `# ${h1Content}\n\n`;
                             hasTitle = true;
                         } else {
-                            markdown += `## ${text}\n\n`;
+                            markdown += `## ${h1Content}\n\n`;
                         }
                         break;
                     case "h2":
-                        markdown += `## ${text}\n\n`;
+                        markdown += `## ${getProcessedContent().trim()}\n\n`;
                         break;
                     case "h3":
-                        markdown += `### ${text}\n\n`;
+                        markdown += `### ${getProcessedContent().trim()}\n\n`;
                         break;
-                    case "a":
-                        // NOUVEAU : Gérer les liens
-                        const linkElement = element as HTMLAnchorElement;
-                        const href = linkElement.href || "";
-                        const linkText = linkElement.textContent?.trim() || "";
-
-                        if (href && linkText) {
-                            markdown += `[${linkText}](${href})`;
-                        } else if (linkText) {
-                            markdown += linkText; // Si pas d'href, juste le texte
-                        }
-                        break;
-                    case "img":
-                        // Gérer les images
-                        const imgElement = element as HTMLImageElement;
-                        const src = imgElement.src || "";
-                        const alt = imgElement.alt || `Image ${imageCounter}`;
-
-                        if (src) {
-                            markdown += `![${alt}](${src})\n\n`;
-                        } else {
-                            markdown += `![${alt}]()\n\n`;
-                        }
-                        imageCounter++;
+                    case "h4":
+                        markdown += `#### ${getProcessedContent().trim()}\n\n`;
                         break;
                     case "p":
-                        // Vérifier s'il y a des images dans le paragraphe
-                        const images = element.querySelectorAll("img");
-                        if (images.length > 0) {
-                            images.forEach((img) => {
-                                const src = img.getAttribute("src") || "";
-                                const alt =
-                                    img.getAttribute("alt") ||
-                                    `Image ${imageCounter}`;
-
-                                if (src) {
-                                    markdown += `![${alt}](${src})\n\n`;
-                                } else {
-                                    markdown += `![${alt}]()\n\n`;
-                                }
-                                imageCounter++;
-                            });
-                        }
-
-                        // Traiter le texte du paragraphe (sans les images)
-                        const textContent = element.cloneNode(true) as Element;
-                        textContent
-                            .querySelectorAll("img")
-                            .forEach((img) => img.remove());
-                        const cleanText = textContent.textContent?.trim() || "";
-
-                        if (cleanText) {
-                            let processedText = cleanText;
-
-                            // NOUVEAU : Gérer les liens dans les paragraphes
-                            const linkElements = element.querySelectorAll("a");
-                            linkElements.forEach((link) => {
-                                const href = link.getAttribute("href") || "";
-                                const linkText = link.textContent || "";
-
-                                if (
-                                    href &&
-                                    linkText &&
-                                    processedText.includes(linkText)
-                                ) {
-                                    processedText = processedText.replace(
-                                        linkText,
-                                        `[${linkText}](${href})`
-                                    );
-                                }
-                            });
-
-                            // Gérer le texte en gras
-                            const strongElements =
-                                element.querySelectorAll("strong, b");
-                            strongElements.forEach((el) => {
-                                const strongText = el.textContent || "";
-                                if (
-                                    strongText &&
-                                    processedText.includes(strongText)
-                                ) {
-                                    processedText = processedText.replace(
-                                        strongText,
-                                        `**${strongText}**`
-                                    );
-                                }
-                            });
-
-                            // Gérer le texte en italique
-                            const emElements =
-                                element.querySelectorAll("em, i");
-                            emElements.forEach((el) => {
-                                const emText = el.textContent || "";
-                                if (emText && processedText.includes(emText)) {
-                                    processedText = processedText.replace(
-                                        emText,
-                                        `*${emText}*`
-                                    );
-                                }
-                            });
-
-                            // Gérer le texte barré
-                            const strikeElements =
-                                element.querySelectorAll("s, del, strike");
-                            strikeElements.forEach((el) => {
-                                const strikeText = el.textContent || "";
-                                if (
-                                    strikeText &&
-                                    processedText.includes(strikeText)
-                                ) {
-                                    processedText = processedText.replace(
-                                        strikeText,
-                                        `~~${strikeText}~~`
-                                    );
-                                }
-                            });
-
-                            markdown += `${processedText}\n\n`;
+                        const pContent = getProcessedContent().trim();
+                        if (pContent) {
+                            markdown += `${pContent}\n\n`;
                         }
                         break;
                     case "ul":
-                        element.querySelectorAll("li").forEach((li) => {
-                            markdown += `- ${li.textContent?.trim() || ""}\n`;
-                        });
-                        markdown += "\n";
-                        break;
                     case "ol":
-                        let index = 1;
-                        element.querySelectorAll("li").forEach((li) => {
-                            markdown += `${index}. ${
-                                li.textContent?.trim() || ""
-                            }\n`;
-                            index++;
-                        });
-                        markdown += "\n";
+                        markdown += processList(element) + "\n";
+                        break;
+                    case "table":
+                        markdown += processTable(element) + "\n";
+                        break;
+                    case "blockquote":
+                        markdown += `> ${getProcessedContent().trim()}\n\n`;
+                        break;
+                    case "pre":
+                        markdown += `\`\`\`\n${element.textContent || ""}\n\`\`\`\n\n`;
+                        break;
+                    case "img":
+                        const src = element.getAttribute("src") || "";
+                        const alt = element.getAttribute("alt") || "image";
+                        markdown += `![${alt}](${src})\n\n`;
+                        break;
+                    case "div":
+                        const divContent = getProcessedContent().trim();
+                        if (divContent) markdown += `${divContent}\n\n`;
                         break;
                 }
             }
         });
 
-        // Si le document n'a pas de titre mais a des paragraphes en majuscules
         if (!hasTitle) {
             const lines = markdown.split("\n");
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
-                // Si c'est une ligne en majuscules (probable titre)
                 if (
                     line &&
                     line === line.toUpperCase() &&
                     line.length > 3 &&
-                    !line.startsWith("![")
+                    !line.startsWith("![") &&
+                    !line.startsWith("#") && 
+                    !line.startsWith("[") &&
+                    !line.startsWith("|")
                 ) {
                     lines[i] = `# ${line}`;
                     hasTitle = true;
@@ -229,7 +257,6 @@ export const processWordFile = async (file: File): Promise<string> => {
         return markdown.trim();
     } catch (error) {
         console.error("Erreur mammoth:", error);
-        // Fallback en cas d'erreur
         const fileName = file.name.replace(".docx", "");
         return `# ${fileName}\n\nErreur lors de la conversion du document Word.\nVeuillez vérifier que le fichier n'est pas corrompu.\n\n![Image non disponible]()`;
     }
