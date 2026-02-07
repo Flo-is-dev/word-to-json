@@ -43,7 +43,8 @@ body {
 
 /* Styles de base pour mobile-first */
 @media (max-width: 640px) {
-  html, body {
+  html,
+  body {
     font-size: 14px;
   }
 }
@@ -97,15 +98,72 @@ body {
   color: #7c3aed;
 }
 
-.prose ul,
+.prose ul {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 2em;
+  list-style-type: disc;
+}
+
 .prose ol {
   margin-top: 1em;
   margin-bottom: 1em;
   padding-left: 2em;
+  list-style-type: decimal;
+}
+
+.prose ul ul {
+  list-style-type: circle;
+}
+
+.prose ul ul ul {
+  list-style-type: square;
 }
 
 .prose li {
   margin-bottom: 0.5em;
+  display: list-item;
+}
+
+.prose li > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 2em 0;
+}
+
+.prose del {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
 }
 
 .prose code {
@@ -113,8 +171,9 @@ body {
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-size: 0.9em;
-  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-    "Courier New", monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
 }
 
 .prose pre {
@@ -140,6 +199,26 @@ body {
 
 .prose em {
   font-style: italic;
+}
+
+/* Styles pour les images flottantes */
+.prose .float-left,
+.prose .float-right {
+  max-width: 50%;
+}
+
+.prose .float-left img,
+.prose .float-right img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* Clearfix pour le conteneur prose */
+.prose::after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* Styles pour les layouts flex */
@@ -169,35 +248,47 @@ body {
   .prose .flex-item {
     min-width: 100%;
   }
-  
+
+  /* Float: empiler sur mobile au lieu de flotter */
+  .prose .float-left,
+  .prose .float-right {
+    float: none !important;
+    max-width: 100% !important;
+    margin: 1rem 0 !important;
+  }
+
   /* Réduire les marges et paddings pour mobile */
-  .prose h1, .prose h2, .prose h3, .prose h4 {
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4 {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
   }
-  
+
   .prose p {
     margin-top: 0.7em;
     margin-bottom: 0.7em;
   }
-  
-  .prose ul, .prose ol {
+
+  .prose ul,
+  .prose ol {
     padding-left: 1.5em;
   }
-  
+
   /* Ajuster la taille des polices pour mobile */
   .prose h1 {
     font-size: 1.75em;
   }
-  
+
   .prose h2 {
     font-size: 1.35em;
   }
-  
+
   .prose h3 {
     font-size: 1.1em;
   }
-  
+
   .prose pre {
     padding: 0.75em;
     font-size: 0.85em;
@@ -210,14 +301,15 @@ body {
   .prose h1 {
     font-size: 1.5em;
   }
-  
+
   .prose pre {
     padding: 0.5em;
     font-size: 0.8em;
   }
-  
+
   /* Ajuster les marges et paddings encore plus */
-  .prose ul, .prose ol {
+  .prose ul,
+  .prose ol {
     padding-left: 1.2em;
   }
 }
@@ -228,21 +320,21 @@ body {
   .grid-cols-2 {
     grid-template-columns: 1fr !important;
   }
-  
+
   /* Réduire les paddings sur mobile */
   .p-6 {
     padding: 1rem !important;
   }
-  
+
   .p-4 {
     padding: 0.75rem !important;
   }
-  
+
   /* Ajuster les boutons et contrôles */
   button.text-xs {
     font-size: 0.65rem !important;
   }
-  
+
   /* Réduire l'espacement entre les éléments */
   .gap-4 {
     gap: 0.75rem !important;
@@ -255,35 +347,36 @@ body {
   .flex-col-reverse {
     flex-direction: column !important;
   }
-  
+
   /* Réduire encore plus les paddings */
   .p-3 {
     padding: 0.5rem !important;
   }
-  
+
   /* Ajuster la taille des icônes */
-  .w-4, .h-4 {
+  .w-4,
+  .h-4 {
     width: 0.875rem !important;
     height: 0.875rem !important;
   }
-  
+
   /* Optimiser l'espace vertical */
   .py-3 {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
   }
-  
+
   /* Ajuster le footer */
   footer {
     padding: 0.5rem !important;
     font-size: 0.75rem !important;
   }
-  
+
   /* Améliorer la lisibilité des textes */
   .text-sm {
     font-size: 0.75rem !important;
   }
-  
+
   /* Optimiser l'affichage des textarea */
   textarea {
     min-height: 150px;

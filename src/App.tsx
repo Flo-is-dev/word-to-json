@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Edit3, Eye, Copy, Globe } from "lucide-react";
+import { Edit3, Eye, Copy, Globe, Image } from "lucide-react";
 
 // Components
 import Modal from "@components/Modal";
@@ -71,6 +71,7 @@ Markdown really simplifies article writing!`;
   const [isBulmaHelpOpen, setIsBulmaHelpOpen] = useState(false);
   const [isLayoutPanelOpen, setIsLayoutPanelOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [imagePathPrefix, setImagePathPrefix] = useState("");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -89,10 +90,10 @@ Markdown really simplifies article writing!`;
 
   // Mettre à jour l'aperçu quand le markdown change
   const updatePreview = useCallback(() => {
-    const result = convertMarkdownToHtmlAndJson(debouncedMarkdown);
+    const result = convertMarkdownToHtmlAndJson(debouncedMarkdown, imagePathPrefix);
     setHtmlPreview(result.html);
     setJsonOutput(result.json);
-  }, [debouncedMarkdown]);
+  }, [debouncedMarkdown, imagePathPrefix]);
 
   useEffect(() => {
     updatePreview();
@@ -182,7 +183,7 @@ Markdown really simplifies article writing!`;
     <div className="bg-slate-50 h-screen flex flex-col">
       {/* En-tête */}
       <header className="bg-white shadow-sm border-b border-slate-200 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="w-full px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-light text-slate-800">
@@ -212,24 +213,24 @@ Markdown really simplifies article writing!`;
 
       {/* Conteneur principal */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="max-w-7xl mx-auto h-full px-6 py-4 flex flex-col flex-1">
+        <div className="w-full h-full px-6 py-4 flex flex-col flex-1">
           {/* Languettes latérales */}
           <SideTab
             label="Markdown"
             onClick={() => setIsMarkdownHelpOpen(true)}
             position={0}
-            bgColor="bg-gradient-to-br from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400"
+            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
           />
           <SideTab
             label="Bulma"
             onClick={() => setIsBulmaHelpOpen(true)}
-            bgColor="bg-gradient-to-br from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400"
+            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
             position={1}
           />
           <SideTab
             label="Layouts"
             onClick={() => setIsLayoutPanelOpen(!isLayoutPanelOpen)}
-            bgColor="bg-gradient-to-br from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400"
+            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
             position={2}
           />
 
@@ -242,12 +243,9 @@ Markdown really simplifies article writing!`;
           />
 
           {/* Layout principal */}
-          <div
-            className="flex-1 flex flex-col overflow-hidden"
-            style={{ minWidth: "70vw", marginInline: "20px" }}
-          >
-            {/* Partie haute avec drag & drop et JSON */}
-            <div className="flex gap-4 mb-4 flex-shrink-0">
+          <div className="flex-1 flex flex-col overflow-hidden w-full ml-5 mr-5">
+            {/* Partie haute avec drag & drop, chemin images et JSON */}
+            <div className="flex flex-col md:flex-row gap-4 mb-4 flex-shrink-0">
               {/* Zone de drag & drop */}
               <FileDropZone
                 onFileSelect={handleFileSelect}
@@ -256,6 +254,26 @@ Markdown really simplifies article writing!`;
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               />
+
+              {/* Préfixe chemin images */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col justify-center min-w-[200px]">
+                <label className="text-xs font-medium text-slate-600 mb-1.5 flex items-center gap-1.5">
+                  <Image className="w-3.5 h-3.5" />
+                  {t.imagePathPrefix}
+                </label>
+                <input
+                  type="text"
+                  value={imagePathPrefix}
+                  onChange={(e) => setImagePathPrefix(e.target.value)}
+                  placeholder={t.imagePathPrefixPlaceholder}
+                  className="w-full text-xs font-mono bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+                {imagePathPrefix.trim() && (
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    → {imagePathPrefix.trim()}1.webp, {imagePathPrefix.trim()}2.webp…
+                  </p>
+                )}
+              </div>
 
               {/* Sortie JSON */}
               <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200">

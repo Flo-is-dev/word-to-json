@@ -43,6 +43,10 @@ export interface Translations {
   htmlHelp: string;
   jsonHelp: string;
   flexHelp: string;
+
+  // Image path prefix
+  imagePathPrefix: string;
+  imagePathPrefixPlaceholder: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -109,6 +113,10 @@ Contenu secondaire (30%)
     htmlHelp: "Aperçu HTML avec mise en forme et colonnes flexibles",
     jsonHelp: "Version minifiée pour intégration web",
     flexHelp: "Utilisez ::: flex et ::: flex-item pour créer des colonnes",
+
+    // Image path prefix
+    imagePathPrefix: "Préfixe chemin images",
+    imagePathPrefixPlaceholder: "ex: /documents/news/news",
   },
 
   en: {
@@ -173,6 +181,10 @@ Secondary content (30%)
     htmlHelp: "HTML preview with formatting and flexible columns",
     jsonHelp: "Minified version for web integration",
     flexHelp: "Use ::: flex and ::: flex-item to create columns",
+
+    // Image path prefix
+    imagePathPrefix: "Image path prefix",
+    imagePathPrefixPlaceholder: "e.g. /documents/news/news",
   },
 };
 
