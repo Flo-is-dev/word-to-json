@@ -19,7 +19,17 @@
   }
 }
 
-/* Scrollbar */
+/* D&D Theme overrides */
+.theme-dnd {
+  font-family: 'Jersey 10', sans-serif;
+}
+
+.theme-dnd ::selection {
+  background-color: #8A2C2C;
+  color: white;
+}
+
+/* Scrollbar - Modern */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -39,6 +49,19 @@
   background: #a1a1aa;
 }
 
+/* Scrollbar - D&D */
+.theme-dnd ::-webkit-scrollbar-track {
+  background: #F2EBD4;
+}
+
+.theme-dnd ::-webkit-scrollbar-thumb {
+  background: #D4C095;
+}
+
+.theme-dnd ::-webkit-scrollbar-thumb:hover {
+  background: #C4AB80;
+}
+
 html,
 body {
   height: 100vh;
@@ -56,7 +79,7 @@ body {
   }
 }
 
-/* Prose styles */
+/* ===== Prose styles - Modern ===== */
 .prose h1 {
   font-size: 2em;
   font-weight: 600;
@@ -217,6 +240,84 @@ body {
   font-style: italic;
 }
 
+/* ===== Prose styles - D&D Theme ===== */
+.theme-dnd .prose h1,
+.theme-dnd .prose h2,
+.theme-dnd .prose h3,
+.theme-dnd .prose h4 {
+  color: #2A1F18;
+  font-weight: normal;
+  font-family: 'Jersey 10', sans-serif;
+}
+
+.theme-dnd .prose h1 {
+  border-bottom: 2px solid #E3D5AB;
+  padding-bottom: 0.3em;
+}
+
+.theme-dnd .prose p {
+  color: #423226;
+}
+
+.theme-dnd .prose a {
+  color: #8A2C2C;
+}
+
+.theme-dnd .prose a:hover {
+  color: #5C4838;
+}
+
+.theme-dnd .prose li {
+  color: #423226;
+}
+
+.theme-dnd .prose li::marker {
+  color: #8A2C2C;
+}
+
+.theme-dnd .prose hr {
+  border-top-color: #E3D5AB;
+}
+
+.theme-dnd .prose th,
+.theme-dnd .prose td {
+  border-color: #E3D5AB;
+}
+
+.theme-dnd .prose th {
+  background-color: #F2EBD4;
+  color: #2A1F18;
+}
+
+.theme-dnd .prose code {
+  background-color: #F2EBD4;
+  color: #423226;
+  font-family: 'Jersey 10', sans-serif;
+}
+
+.theme-dnd .prose pre {
+  background-color: #F2EBD4;
+}
+
+.theme-dnd .prose blockquote {
+  border-left: 4px solid #8A2C2C;
+  background-color: #F2EBD4;
+  color: #8C7456;
+  padding: 0.5em 1em;
+}
+
+.theme-dnd .prose strong {
+  color: #8A2C2C;
+}
+
+.theme-dnd .prose del {
+  color: #C4AB80;
+}
+
+.theme-dnd .prose img {
+  border-radius: 0;
+}
+
 /* Float images */
 .prose .float-left,
 .prose .float-right {
@@ -228,6 +329,11 @@ body {
   width: 100%;
   height: auto;
   border-radius: 0.5rem;
+}
+
+.theme-dnd .prose .float-left img,
+.theme-dnd .prose .float-right img {
+  border-radius: 0;
 }
 
 .prose::after {
@@ -251,6 +357,12 @@ body {
   background-color: #fafafa;
   border: 1px solid #e4e4e7;
   border-radius: 0.5rem;
+}
+
+.theme-dnd .prose .flex-item {
+  background-color: #F2EBD4;
+  border: 2px solid #E3D5AB;
+  border-radius: 0;
 }
 
 /* Responsive */

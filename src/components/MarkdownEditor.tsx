@@ -1,4 +1,5 @@
 import React, { useRef, useMemo } from "react";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface MarkdownEditorProps {
     value: string;
@@ -11,6 +12,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     onChange,
     textareaRef,
 }) => {
+    const { isDnd } = useTheme();
     const localRef = useRef<HTMLTextAreaElement>(null);
     const actualRef = textareaRef || localRef;
 
@@ -35,7 +37,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     return (
         <div className="w-full h-full relative">
             {/* Line numbers */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gray-50 border-r border-gray-100 flex flex-col items-end pr-2 pt-4 text-[10px] font-mono text-gray-300 leading-6 select-none overflow-hidden">
+            <div className={`absolute left-0 top-0 bottom-0 ${isDnd ? "w-10 bg-parchment-100 border-r-2 border-parchment-200 text-lg text-parchment-400" : "w-8 bg-gray-50 border-r border-gray-100 text-[10px] text-gray-300"} flex flex-col items-end pr-2 pt-4 font-mono leading-6 select-none overflow-hidden`}>
                 {Array.from({ length: lineCount }, (_, i) => (
                     <div key={i}>{i + 1}</div>
                 ))}
@@ -67,7 +69,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
                     onChange(restoredText);
                 }}
-                className="absolute inset-0 left-8 w-[calc(100%-2rem)] h-full p-4 text-sm font-mono leading-6 bg-white text-gray-800 resize-none focus:outline-none"
+                className={`absolute inset-0 ${isDnd ? "left-10 w-[calc(100%-2.5rem)]" : "left-8 w-[calc(100%-2rem)]"} h-full p-4 ${isDnd ? "text-xl font-dnd leading-6 bg-transparent text-parchment-900" : "text-sm font-mono leading-6 bg-white text-gray-800"} resize-none focus:outline-none`}
                 spellCheck={false}
             />
         </div>
