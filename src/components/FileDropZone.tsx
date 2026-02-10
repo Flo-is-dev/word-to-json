@@ -28,15 +28,29 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       onClick={handleClick}
-      className={`bg-white border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors w-56 ${
+      className={`group bg-white border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all w-56 relative overflow-hidden ${
         isDragOver
-          ? "border-orange-400 bg-orange-50"
-          : "border-slate-300 hover:border-orange-400"
+          ? "border-black bg-gray-50"
+          : "border-gray-300 hover:border-black hover:bg-gray-50"
       }`}
     >
-      <Upload className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-      <p className="text-xs text-slate-500">
-        {isDragOver ? "Déposez le fichier ici" : "Glissez un .docx ici"}
+      {/* Dot pattern background */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: "radial-gradient(#000 1px, transparent 1px)",
+          backgroundSize: "16px 16px",
+        }}
+      />
+
+      <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform relative z-10">
+        <Upload className="w-5 h-5 text-gray-400 group-hover:text-black transition-colors" />
+      </div>
+      <p className="text-xs text-gray-900 font-medium relative z-10">
+        {isDragOver ? "Drop here" : "Import Document"}
+      </p>
+      <p className="text-[10px] text-gray-400 mt-1 relative z-10">
+        .docx, .md supported
       </p>
       <input
         ref={fileInputRef}

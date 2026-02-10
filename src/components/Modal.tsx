@@ -7,9 +7,8 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  bgColor = "bg-orange-600",
+  bgColor = "bg-black",
 }) => {
-  // Fermer avec Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -33,24 +32,24 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 animate-fade-in">
       <div
-        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div className="relative flex items-center justify-center min-h-screen p-4">
-        <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-slide-in">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-slide-in border border-gray-200">
           <div
-            className={`${bgColor} text-white px-6 py-4 flex justify-between items-center`}
+            className={`${bgColor} text-white px-5 py-3 flex justify-between items-center`}
           >
-            <h2 className="text-xl font-semibold">{title}</h2>
+            <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
+              className="text-white/70 hover:text-white transition-colors"
               aria-label="Fermer"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-56px)]">
             {children}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Edit3, Eye, Copy, Globe, Image } from "lucide-react";
+import { Edit3, Eye, Copy, Globe } from "lucide-react";
 
 // Components
 import Modal from "@components/Modal";
@@ -85,7 +85,6 @@ Markdown really simplifies article writing!`;
   const toggleLanguage = () => {
     const newLang = language === "fr" ? "en" : "fr";
     setLanguage(newLang);
-    // Mettre à jour le markdown exemple si c'est toujours le contenu par défaut
     if (markdown === getDefaultMarkdown(language)) {
       setMarkdown(getDefaultMarkdown(newLang));
     }
@@ -158,7 +157,6 @@ Markdown really simplifies article writing!`;
       text.substring(0, start) + layout.template + text.substring(end);
     setMarkdown(newText);
 
-    // Repositionner le curseur
     setTimeout(() => {
       if (textarea) {
         textarea.selectionStart = start + layout.template.length;
@@ -210,201 +208,254 @@ Markdown really simplifies article writing!`;
   };
 
   return (
-    <div className="bg-slate-50 h-screen flex flex-col">
-      {/* En-tête */}
-      <header className="bg-white shadow-sm border-b border-slate-200 flex-shrink-0">
-        <div className="w-full px-6 py-4">
+    <div className="bg-gray-50 h-screen flex flex-col font-sans text-gray-900 antialiased overflow-hidden">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 flex-shrink-0 z-30">
+        <div className="w-full px-5 py-3">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-light text-slate-800">
-                {language === "fr" ? "HTML to JSON" : "HTML to JSON"}
-              </h1>
-              <p className="text-slate-500 text-sm mt-0.5">
-                {language === "fr"
-                  ? "Écrivez en markdown, visualisez le résultat en HTML et copiez le JSON"
-                  : "Write in markdown, view HTML result and copy JSON"}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-sm font-semibold tracking-tight flex items-center gap-2">
+                  <span>florentg</span>
+                  <span className="text-gray-300">/</span>
+                  <span>html2json</span>
+                </h1>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  <p className="text-gray-500 text-[11px] font-mono">v2.0.4 stable</p>
+                </div>
+              </div>
             </div>
 
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-2 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
-              title={
-                language === "fr" ? "Switch to English" : "Passer en français"
-              }
-            >
-              <Globe size={16} />
-              {language === "fr" ? "EN" : "FR"}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white text-gray-600 text-xs font-medium rounded-md hover:bg-gray-50 border border-gray-200 transition-all shadow-subtle hover:border-gray-300"
+                title={
+                  language === "fr" ? "Switch to English" : "Passer en français"
+                }
+              >
+                <Globe size={14} />
+                {language === "fr" ? "EN" : "FR"}
+              </button>
+              {/* Copy JSON button */}
+              <button
+                onClick={copyJson}
+                className="flex items-center gap-2 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-all shadow-subtle border border-transparent"
+              >
+                <Copy size={14} />
+                Export JSON
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Conteneur principal */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="w-full h-full px-6 py-4 flex flex-col flex-1">
-          {/* Languettes latérales */}
-          <SideTab
-            label="Markdown"
-            onClick={() => setIsMarkdownHelpOpen(true)}
-            position={0}
-            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
-          />
-          <SideTab
-            label="Bulma"
-            onClick={() => setIsBulmaHelpOpen(true)}
-            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
-            position={1}
-          />
-          <SideTab
-            label="Layouts"
-            onClick={() => setIsLayoutPanelOpen(!isLayoutPanelOpen)}
-            bgColor="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500"
-            position={2}
-          />
+      {/* Main Workspace */}
+      <div className="flex-1 flex overflow-hidden relative">
 
-          {/* Panneau de layouts */}
-          <LayoutPanel
-            isOpen={isLayoutPanelOpen}
-            onClose={() => setIsLayoutPanelOpen(false)}
-            layouts={layouts}
-            onLayoutSelect={insertLayout}
-          />
+        {/* Floating Sidebar Toolbelt */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 pointer-events-none">
+          <div className="pointer-events-auto bg-white border border-gray-200 shadow-card p-1 rounded-lg flex flex-col gap-1">
+            <SideTab
+              label="Markdown"
+              onClick={() => setIsMarkdownHelpOpen(true)}
+              position={0}
+              bgColor=""
+            />
+            <SideTab
+              label="Bulma"
+              onClick={() => setIsBulmaHelpOpen(true)}
+              bgColor=""
+              position={1}
+            />
+            <div className="h-px w-5 mx-auto bg-gray-200 my-1" />
+            <SideTab
+              label="Layouts"
+              onClick={() => setIsLayoutPanelOpen(!isLayoutPanelOpen)}
+              bgColor=""
+              position={2}
+            />
+          </div>
+        </div>
 
-          {/* Layout principal */}
-          <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden w-full ml-5 mr-5" style={{ paddingInline: '4rem' }}>
-            {/* Partie haute avec drag & drop, chemin images et JSON */}
-            <div className="flex flex-col md:flex-row gap-4 overflow-auto" style={{ height: `calc(${topPanelRatio * 100}% - 6px)`, minHeight: 0 }}>
-              {/* Zone de drag & drop */}
-              <FileDropZone
-                onFileSelect={handleFileSelect}
-                isDragOver={isDragOver}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              />
+        {/* Layout Panel */}
+        <LayoutPanel
+          isOpen={isLayoutPanelOpen}
+          onClose={() => setIsLayoutPanelOpen(false)}
+          layouts={layouts}
+          onLayoutSelect={insertLayout}
+        />
 
-              {/* Préfixe chemin images */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col justify-center min-w-[200px]">
-                <label className="text-xs font-medium text-slate-600 mb-1.5 flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5" />
+        {/* Content Area */}
+        <div ref={containerRef} className="flex-1 flex flex-col w-full h-full pl-24 pr-5 py-5 gap-4">
+
+          {/* Top Section: Inputs */}
+          <div className="flex flex-col lg:flex-row gap-4 overflow-auto" style={{ height: `calc(${topPanelRatio * 100}% - 6px)`, minHeight: 0 }}>
+
+            {/* File Upload */}
+            <FileDropZone
+              onFileSelect={handleFileSelect}
+              isDragOver={isDragOver}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            />
+
+            {/* Settings & JSON Output */}
+            <div className="flex-1 flex flex-col gap-3">
+              {/* Path Prefix */}
+              <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-black focus-within:border-black transition-all">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-gray-500 whitespace-nowrap">
                   {t.imagePathPrefix}
                 </label>
+                <div className="h-4 w-px bg-gray-200" />
                 <input
                   type="text"
                   value={imagePathPrefix}
                   onChange={(e) => setImagePathPrefix(e.target.value)}
                   placeholder={t.imagePathPrefixPlaceholder}
-                  className="w-full text-xs font-mono bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full text-xs font-mono bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none"
                 />
                 {imagePathPrefix.trim() && (
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    → {imagePathPrefix.trim()}1.webp, {imagePathPrefix.trim()}2.webp…
+                  <p className="text-[10px] text-gray-400 whitespace-nowrap font-mono">
+                    {imagePathPrefix.trim()}1.webp
                   </p>
                 )}
               </div>
 
-              {/* Sortie JSON */}
-              <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200">
-                <div className="p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-slate-600">
-                      {language === "fr" ? "Sortie JSON" : "JSON Output"}
-                    </h3>
-                    <button
-                      onClick={copyJson}
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-sm"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      {language === "fr" ? "Copier JSON" : "Copy JSON"}
-                    </button>
-                  </div>
+              {/* JSON Output */}
+              <div className="flex-1 bg-white rounded-lg shadow-card border border-gray-200 flex flex-col overflow-hidden">
+                <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between bg-white">
+                  <h3 className="text-[11px] font-mono text-gray-500 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange-400" />
+                    output.json
+                  </h3>
+                  <button
+                    onClick={copyJson}
+                    className="text-gray-400 hover:text-black transition-colors"
+                    title={language === "fr" ? "Copier" : "Copy"}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="relative flex-1 bg-gray-50/50">
                   <textarea
                     value={jsonOutput}
                     onChange={(e) => setJsonOutput(e.target.value)}
-                    className="w-full h-40 text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-200 resize-none text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="absolute inset-0 w-full h-full p-4 text-xs font-mono bg-transparent resize-none text-gray-600 focus:outline-none leading-relaxed"
                     spellCheck={false}
                   />
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Séparateur draggable */}
-            <div
-              onMouseDown={handleResizeStart}
-              className="flex-shrink-0 flex items-center justify-center cursor-row-resize group py-1"
-              style={{ height: '12px' }}
-            >
-              <div className="w-16 h-1 rounded-full bg-slate-300 group-hover:bg-indigo-400 transition-colors" />
-            </div>
+          {/* Resizer Handle */}
+          <div
+            onMouseDown={handleResizeStart}
+            className="flex-shrink-0 flex items-center justify-center cursor-row-resize group py-1"
+          >
+            <div className="w-8 h-1 rounded-full bg-gray-200 group-hover:bg-gray-400 transition-all" />
+          </div>
 
-            {/* Grille des 2 colonnes principales */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden" style={{ height: `calc(${(1 - topPanelRatio) * 100}% - 6px)`, minHeight: 0 }}>
-              {/* Colonne 1: Éditeur Markdown */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center flex-shrink-0">
-                  <Edit3 className="w-4 h-4 text-slate-500 mr-2" />
-                  <h3 className="font-medium text-slate-700 text-sm">
-                    {language === "fr" ? "Éditeur Markdown" : "Markdown Editor"}
-                  </h3>
+          {/* Bottom Section: Editors */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0 overflow-hidden" style={{ height: `calc(${(1 - topPanelRatio) * 100}% - 6px)`, minHeight: 0 }}>
+
+            {/* Markdown Editor */}
+            <div className="bg-white rounded-lg shadow-card border border-gray-200 flex flex-col overflow-hidden relative">
+              <div className="bg-white px-3 py-2 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-2">
+                  <Edit3 className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-700">
+                    {language === "fr" ? "Editeur" : "Editor"}
+                  </span>
                 </div>
-                <div className="p-3 flex-1 overflow-hidden">
-                  <MarkdownEditor
-                    value={markdown}
-                    onChange={setMarkdown}
-                    textareaRef={textareaRef}
-                  />
-                </div>
+                <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                  MARKDOWN
+                </span>
               </div>
-
-              {/* Colonne 2: Aperçu HTML */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center flex-shrink-0">
-                  <Eye className="w-4 h-4 text-slate-500 mr-2" />
-                  <h3 className="font-medium text-slate-700 text-sm">
-                    {language === "fr" ? "Aperçu HTML" : "HTML Preview"}
-                  </h3>
-                </div>
-                <div
-                  className="p-6 overflow-y-auto flex-1 text-slate-800 prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{
-                    __html: htmlPreview,
-                  }}
+              <div className="flex-1 overflow-hidden">
+                <MarkdownEditor
+                  value={markdown}
+                  onChange={setMarkdown}
+                  textareaRef={textareaRef}
                 />
               </div>
+            </div>
+
+            {/* HTML Preview */}
+            <div className="bg-white rounded-lg shadow-card border border-gray-200 flex flex-col overflow-hidden">
+              <div className="bg-white px-3 py-2 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-700">
+                    {language === "fr" ? "Aperçu" : "Preview"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-gray-200" />
+                  <span className="w-2 h-2 rounded-full bg-gray-200" />
+                  <span className="w-2 h-2 rounded-full bg-gray-900" />
+                </div>
+              </div>
+              <div
+                className="p-8 overflow-y-auto flex-1 prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: htmlPreview,
+                }}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-3 px-6 text-center text-sm text-slate-600">
-        <p>
-          {language === "fr" ? "Avec" : "Made with"} 💜 by{" "}
-          <a
-            href="https://www.linkedin.com/in/florent-jcg/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-orange-600 hover:text-orange-700 underline"
-          >
-            Florent Gironde
-          </a>{" "}
-          —{" "}
-          {language === "fr"
-            ? "Je compile, tu compiles, nous compilons! ☕"
-            : "I compile, you compile, we compile! ☕"}
-        </p>
+      {/* Status Bar Footer */}
+      <footer className="bg-white border-t border-gray-200 py-1.5 px-4 text-center z-10 flex justify-between items-center text-[10px] font-mono text-gray-400">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 hover:text-gray-600 cursor-pointer transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="6" y1="3" x2="6" y2="15" />
+              <circle cx="18" cy="6" r="3" />
+              <circle cx="6" cy="18" r="3" />
+              <path d="M18 9a9 9 0 0 1-9 9" />
+            </svg>
+            main
+          </span>
+          <span className="hover:text-gray-600 cursor-pointer transition-colors">300ms</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span>
+            Built by{" "}
+            <a
+              href="https://www.linkedin.com/in/florent-jcg/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-600 transition-colors"
+            >
+              Florent Gironde
+            </a>
+          </span>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span className="text-green-600">All systems normal</span>
+        </div>
       </footer>
 
-      {/* Modales */}
+      {/* Modals */}
       <Modal
         isOpen={isMarkdownHelpOpen}
         onClose={() => setIsMarkdownHelpOpen(false)}
         title={
           language === "fr" ? "Aide-mémoire Markdown" : "Markdown Cheat Sheet"
         }
-        bgColor="bg-orange-600"
+        bgColor="bg-gray-900"
       >
         <MarkdownHelp language={language} />
       </Modal>
@@ -415,7 +466,7 @@ Markdown really simplifies article writing!`;
         title={
           language === "fr" ? "Aide-mémoire Bulma CSS" : "Bulma CSS Cheat Sheet"
         }
-        bgColor="bg-rose-600"
+        bgColor="bg-gray-900"
       >
         <BulmaHelp language={language} />
       </Modal>

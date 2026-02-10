@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node test-regex.mjs:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

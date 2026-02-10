@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 
 interface MarkdownEditorProps {
     value: string;
@@ -16,12 +16,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
     // Fonction pour formater le texte avec les base64 tronquées pour l'affichage
     const formatDisplayText = (text: string): string => {
-        // Regex pour détecter les images avec base64
         const base64ImageRegex =
             /!\[([^\]]*)\]\(data:image\/[^;]+;base64,([^)]+)\)/g;
 
         return text.replace(base64ImageRegex, (_match, alt, base64) => {
-            // Tronquer le base64 à ~50 caractères
             const truncated = base64.substring(0, 50);
             const sizeKB = Math.floor(base64.length / 1024);
             return `![${alt}](data:image/...;base64,${truncated}... [${sizeKB}KB])`;
@@ -30,20 +28,28 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
     const displayText = formatDisplayText(value);
 
+    const lineCount = useMemo(() => {
+        return displayText.split("\n").length;
+    }, [displayText]);
+
     return (
-        <div className="w-full h-full">
-            {/* Textarea simple avec texte tronqué */}
+        <div className="w-full h-full relative">
+            {/* Line numbers */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gray-50 border-r border-gray-100 flex flex-col items-end pr-2 pt-4 text-[10px] font-mono text-gray-300 leading-6 select-none overflow-hidden">
+                {Array.from({ length: lineCount }, (_, i) => (
+                    <div key={i}>{i + 1}</div>
+                ))}
+            </div>
+            {/* Textarea */}
             <textarea
                 ref={actualRef}
                 value={displayText}
                 onChange={(e) => {
-                    // Restaurer les base64 complètes si elles existent dans value
                     const newDisplayText = e.target.value;
-                    
-                    // Récupérer les images originales avec base64 complètes
+
                     const originalImages: Array<{ placeholder: string; full: string }> = [];
                     const base64ImageRegex = /!\[([^\]]*)\]\(data:image\/[^;]+;base64,([^)]+)\)/g;
-                    
+
                     let match;
                     while ((match = base64ImageRegex.exec(value)) !== null) {
                         const alt = match[1];
@@ -53,16 +59,15 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                         const placeholder = `![${alt}](data:image/...;base64,${truncated}... [${sizeKB}KB])`;
                         originalImages.push({ placeholder, full: match[0] });
                     }
-                    
-                    // Remplacer les placeholders par les images complètes
+
                     let restoredText = newDisplayText;
                     originalImages.forEach(({ placeholder, full }) => {
                         restoredText = restoredText.replace(placeholder, full);
                     });
-                    
+
                     onChange(restoredText);
                 }}
-                className="w-full h-full p-4 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm resize-none bg-slate-50 text-slate-800"
+                className="absolute inset-0 left-8 w-[calc(100%-2rem)] h-full p-4 text-sm font-mono leading-6 bg-white text-gray-800 resize-none focus:outline-none"
                 spellCheck={false}
             />
         </div>
