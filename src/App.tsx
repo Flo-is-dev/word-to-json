@@ -74,6 +74,9 @@ Markdown really simplifies article writing!`;
   const [imagePathPrefix, setImagePathPrefix] = useState("");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [topPanelRatio, setTopPanelRatio] = useState(0.35);
+  const isDraggingRef = useRef(false);
 
   // Debouncer le markdown pour éviter trop de re-rendus
   const debouncedMarkdown = useDebounce(markdown, 300);
@@ -98,6 +101,33 @@ Markdown really simplifies article writing!`;
   useEffect(() => {
     updatePreview();
   }, [updatePreview]);
+
+  // Gestion du resize vertical
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const y = moveEvent.clientY - rect.top;
+      const ratio = Math.max(0.15, Math.min(0.85, y / rect.height));
+      setTopPanelRatio(ratio);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, []);
 
   // Copier le JSON
   const copyJson = async () => {
@@ -243,9 +273,9 @@ Markdown really simplifies article writing!`;
           />
 
           {/* Layout principal */}
-          <div className="flex-1 flex flex-col overflow-hidden w-full ml-5 mr-5">
+          <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden w-full ml-5 mr-5" style={{ paddingInline: '4rem' }}>
             {/* Partie haute avec drag & drop, chemin images et JSON */}
-            <div className="flex flex-col md:flex-row gap-4 mb-4 flex-shrink-0">
+            <div className="flex flex-col md:flex-row gap-4 overflow-auto" style={{ height: `calc(${topPanelRatio * 100}% - 6px)`, minHeight: 0 }}>
               {/* Zone de drag & drop */}
               <FileDropZone
                 onFileSelect={handleFileSelect}
@@ -300,8 +330,17 @@ Markdown really simplifies article writing!`;
               </div>
             </div>
 
+            {/* Séparateur draggable */}
+            <div
+              onMouseDown={handleResizeStart}
+              className="flex-shrink-0 flex items-center justify-center cursor-row-resize group py-1"
+              style={{ height: '12px' }}
+            >
+              <div className="w-16 h-1 rounded-full bg-slate-300 group-hover:bg-indigo-400 transition-colors" />
+            </div>
+
             {/* Grille des 2 colonnes principales */}
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden" style={{ height: `calc(${(1 - topPanelRatio) * 100}% - 6px)`, minHeight: 0 }}>
               {/* Colonne 1: Éditeur Markdown */}
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
                 <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center flex-shrink-0">

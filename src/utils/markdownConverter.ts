@@ -13,14 +13,17 @@ marked.setOptions({
 });
 
 /**
- * Nettoie la syntaxe du gras en supprimant les espaces internes
+ * Nettoie la syntaxe du gras en supprimant les espaces internes (export Word)
  * ** texte ** → **texte**
+ * Traite chaque ** individuellement pour ne pas fusionner deux bolds distincts
  */
 const cleanBoldSyntax = (markdown: string): string => {
   return markdown
-    .replace(/\*\* +([^*]+?) +\*\*/g, "**$1**")
-    .replace(/\*\* +([^*]+?)\*\*/g, "**$1**")
-    .replace(/\*\*([^*]+?) +\*\*/g, "**$1**");
+    // Opening **/*** avec espace après : "** texte" → "**texte", "*** texte" → "***texte"
+    // [ \t]+ pour ne matcher que les espaces horizontaux (pas les sauts de ligne)
+    .replace(/(^|[\s(["'])(\*{2,3})[ \t]+(?=[^\s*])/gm, "$1$2")
+    // Closing **/*** avec espace avant : "texte **" → "texte**", "texte ***" → "texte***"
+    .replace(/([^\s*])[ \t]+(\*{2,3})(?=$|[\s)\].,;:!?"'])/gm, "$1$2");
 };
 
 /**
