@@ -97,4 +97,21 @@ export const layouts: LayoutType[] = [
     ),
     template: `\n::: float-right\n![image](url)\n:::\n\nTexte qui enveloppe l'image flottante à droite.\n`,
   },
+  {
+    id: "figure-caption",
+    name: "Image avec légende",
+    preview: React.createElement(
+      "div",
+      { className: "flex flex-col items-center gap-0.5 w-16 h-8" },
+      React.createElement("div", {
+        className: "bg-blue-300 rounded",
+        style: { width: "70%", flex: 1 },
+      }),
+      React.createElement("div", {
+        className: "bg-gray-300 rounded",
+        style: { width: "50%", height: 2 },
+      })
+    ),
+    template: `\n::: figure\n![image](url)\nLégende de l'image\n:::\n`,
+  },
 ];

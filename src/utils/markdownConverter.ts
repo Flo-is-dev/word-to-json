@@ -151,6 +151,47 @@ const processCustomBlocks = (markdown: string): BlockProcessingResult => {
         result.push(marker);
         blockCounter++;
       }
+    }
+    // Détecter les blocs figure (image + légende)
+    else if (line === "::: figure") {
+      i++;
+      const itemContent: string[] = [];
+
+      while (i < lines.length) {
+        const currentLine = lines[i].trim();
+        if (currentLine === ":::") break;
+        itemContent.push(lines[i]);
+        i++;
+      }
+
+      const content = itemContent.join("\n").trim();
+      if (content) {
+        // Séparer l'image du reste (la légende)
+        const imgMatch = content.match(/^(!\[[^\]]*\]\([^)]*\))\s*\n?([\s\S]*)$/);
+        if (imgMatch) {
+          const imgHtml = (marked.parse(imgMatch[1]) as string).trim()
+            .replace(/<p>(.*)<\/p>/, "$1");
+          const captionText = imgMatch[2].trim();
+          const captionHtml = captionText
+            ? `<p style='font-size: 14px; color: gray; margin-top: 4px; text-align: center;'>${captionText}</p>`
+            : "";
+          const figureHtml = `<figure style='margin: 1rem 0; text-align: center;'>${imgHtml}${captionHtml}</figure>`;
+
+          const marker = `CUSTOM_BLOCK_${blockCounter}`;
+          blockHtmlMap.set(marker, figureHtml);
+          result.push(marker);
+          blockCounter++;
+        } else {
+          // Pas d'image trouvée, traiter comme du contenu normal
+          const itemHtml = (marked.parse(content) as string).trim();
+          const figureHtml = `<figure style='margin: 1rem 0; text-align: center;'>${itemHtml}</figure>`;
+
+          const marker = `CUSTOM_BLOCK_${blockCounter}`;
+          blockHtmlMap.set(marker, figureHtml);
+          result.push(marker);
+          blockCounter++;
+        }
+      }
     } else {
       result.push(lines[i]);
     }

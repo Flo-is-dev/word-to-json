@@ -146,6 +146,13 @@ Contenu colonne 2
 :::
 :::`}
           </pre>
+          <p className="font-medium mt-3">Image avec légende:</p>
+          <pre className="bg-slate-100 p-2 rounded text-slate-700">
+            {`::: figure
+![image](url)
+Légende de l'image
+:::`}
+          </pre>
         </div>
       </div>
     </div>
